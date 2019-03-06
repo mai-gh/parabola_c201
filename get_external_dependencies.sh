@@ -12,6 +12,7 @@ gpg --verify parabola-systemd-cli-armv7h-tarball-2018-02-06.tar.gz.sig
 # we need the futility tool from vboot-utils
 git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
 cd vboot_reference
+git checkout 5c904692b5c3279b3258deaf98a65336f62d1df8
 make all
 cd ..
 

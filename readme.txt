@@ -36,5 +36,5 @@ how to install Parabola GNU/Linux-Libre onto a usb flash drive or
           +-- eg: # ./partition_8gb.sh /dev/sdX
 
 #### Install the rootfs and kernel
-        * $ ./install_to_disk.sh /dev/sdX
+        * # ./install_to_disk.sh /dev/sdX
 
