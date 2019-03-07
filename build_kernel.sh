@@ -1,11 +1,13 @@
 #!/bin/bash
+set -e
+set -u
+set -x
 
 export BASE_DIR="$(pwd)"
 export CARCH='armv7h'
 export KARCH='arm'
 export CROSS_COMPILE=arm-none-eabi- 
 export ARCH=arm
-
 
 function msg2 {
   echo "$@"
@@ -26,11 +28,16 @@ function modify_config {
 cd linux-libre
 
 source PKGBUILD
+export pkgdir='.'
+
 bsdtar -xf linux-libre-$_srcbasever.tar.xz
 xz --decompress --keep patch-$_srcbasever-$_srcver.xz
 
 prepare
 modify_config
-build
+
+cd ..
+make zImage dtbs 
+cd ..
 _package-chromebook
 

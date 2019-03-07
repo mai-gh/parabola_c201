@@ -38,3 +38,8 @@ how to install Parabola GNU/Linux-Libre onto a usb flash drive or
 #### Install the rootfs and kernel
         * # ./install_to_disk.sh /dev/sdX
 
+#### Post Install
+
+#### building a kernel in system
+        * # pacman --noconfirm --needed -S fakeroot make gcc pkg-config libyaml base-devel trousers pkgfile strace bc uboot-tools dtc wget
+        * comment out the line:    export CROSS_COMPILE=arm-none-eabi-
