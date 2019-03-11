@@ -17,6 +17,7 @@ fi
 DISK_DEVICE_NAME="$(echo $DISK | awk -F'/' '{print $NF}')"
 ROOT_PARTITION="$DISK"2
 SWAP_PARTITION="$DISK"3
+# TODO allow specify TOTAL_SECTORS
 TOTAL_SECTORS=$(cat /sys/block/$DISK_DEVICE_NAME/size)
 SECTOR_SIZE=$(cat /sys/block/$DISK_DEVICE_NAME/queue/hw_sector_size)
 
@@ -35,9 +36,17 @@ ROOTFS_PART_START=$(( $KERNEL_PART_END + 1 ))
 
 LAST_GAP_END=$(( $TOTAL_SECTORS - 1 ))
 LAST_GAP_START=$(( $LAST_GAP_END - $LAST_GAP_SIZE + 1 ))
-SWAP_PART_END=$(( $LAST_GAP_START - 1 ))
-SWAP_PART_START=$(( $SWAP_PART_END - $SWAP_PART_SIZE + 1 ))
-ROOTFS_PART_END=$(( $SWAP_PART_START - 1 ))
+if [ $TOTAL_SECTORS -lt 10000000 ]; then # if size of disk is less than 5GB do not make swap
+    MAKESWAP='false' 
+    ROOTFS_PART_END=$(( $LAST_GAP_START - 1 ))
+    SWAP_PART_END=0
+    SWAP_PART_START=0
+else
+    MAKESWAP='true' 
+    SWAP_PART_END=$(( $LAST_GAP_START - 1 ))
+    SWAP_PART_START=$(( $SWAP_PART_END - $SWAP_PART_SIZE + 1 ))
+    ROOTFS_PART_END=$(( $SWAP_PART_START - 1 ))
+fi
 
 echo "TOTAL_SECTORS     = $TOTAL_SECTORS"
 echo "SECTOR_SIZE       = $SECTOR_SIZE"
@@ -80,10 +89,12 @@ sgdisk --change-name=2:Root $DISK
 mkfs.ext4 $ROOT_PARTITION
 
 # create the swap partition
-sgdisk --new=3:$SWAP_PART_START:$SWAP_PART_END $DISK
-sgdisk --typecode=3:$SWAP_PART_TYPE $DISK
-sgdisk --change-name=3:Swap $DISK
-mkswap $SWAP_PARTITION
+if [ $MAKESWAP = 'true' ]; then
+    sgdisk --new=3:$SWAP_PART_START:$SWAP_PART_END $DISK
+    sgdisk --typecode=3:$SWAP_PART_TYPE $DISK
+    sgdisk --change-name=3:Swap $DISK
+    mkswap $SWAP_PARTITION
+fi
 
 sgdisk --print $DISK
 lsblk $DISK
